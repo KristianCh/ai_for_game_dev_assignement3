@@ -4,20 +4,8 @@ using UnityEngine;
 
 public class SelectorNode : AbstractNode
 {
-    private List<AbstractNode> _actionSequence = new List<AbstractNode>();
-    private int _sequencePosition;
-
-    public List<AbstractNode> ActionSequence
-    {
-        get => _actionSequence;
-        set => _actionSequence = value;
-    }
-
-    public int SequencePosition
-    {
-        get => _sequencePosition;
-        set => _sequencePosition = value;
-    }
+    private List<AbstractNode> ActionSequence { get; set; } = new List<AbstractNode>();
+    private int SequencePosition { get; set; }
 
     public SelectorNode(BehaviourTree btree)
     {

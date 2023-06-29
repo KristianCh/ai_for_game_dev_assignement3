@@ -5,28 +5,10 @@ using UnityEngine;
 public abstract class ComputerPlayer : AbstractPlayer
 {
     protected Queue<Vector2Int> pathTilesQueue = new Queue<Vector2Int>();
-    
-    private Vector2Int _pathTarget;
-    private float _currentPathLength = 0;
-    private bool _markSucceeded = false;
 
-    public Vector2Int PathTarget
-    {
-        get => _pathTarget;
-        set => _pathTarget = value;
-    }
-
-    public float CurrentPathLength
-    {
-        get => _currentPathLength;
-        set => _currentPathLength = value;
-    }
-
-    public bool MarkSucceeded
-    {
-        get => _markSucceeded;
-        set => _markSucceeded = value;
-    }
+    public Vector2Int PathTarget { get; set; }
+    public float CurrentPathLength { get; set; } = 0;
+    public bool MarkSucceeded { get; set; } = false;
 
     protected override void Update()
     {

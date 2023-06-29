@@ -4,28 +4,17 @@ using UnityEngine;
 
 public class ConditionNode : AbstractNode
 {
-    private AbstractNode _left;
-    private AbstractNode _right;
-    
     public delegate bool TriggerFuncDel();
-    public TriggerFuncDel DoesTrigger = delegate () { return true; };
 
-    public AbstractNode Left
-    {
-        get => _left;
-        set => _left = value;
-    }
+    private readonly TriggerFuncDel _doesTrigger;
 
-    public AbstractNode Right
-    {
-        get => _right;
-        set => _right = value;
-    }
+    private AbstractNode Left { get; set; }
+    private AbstractNode Right { get; set; }
 
-    public ConditionNode(TriggerFuncDel triggerFunc, BehaviourTree BTree)
+    public ConditionNode(TriggerFuncDel triggerFunc, BehaviourTree bTree)
     {
-        this.BTree = BTree;
-        this.DoesTrigger = triggerFunc;
+        BTree = bTree;
+        _doesTrigger = triggerFunc;
         NodeType = NodeType.Condition;
     }
 
@@ -43,16 +32,11 @@ public class ConditionNode : AbstractNode
 
     public override AbstractNode GetNextNode()
     {
-        if (DoesTrigger())
-        {
+        return _doesTrigger() ?
             //Debug.Log("Left");
-            return Left;
-        }
-        else
-        {
+            Left :
             //Debug.Log("Right");
-            return Right;
-        }
+            Right;
     }
 
     // common nodes

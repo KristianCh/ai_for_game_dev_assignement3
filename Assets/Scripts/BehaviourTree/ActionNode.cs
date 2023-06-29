@@ -4,29 +4,23 @@ using UnityEngine;
 
 public class ActionNode : AbstractNode
 {
-    private CollectibleItemType _targetItemType;
-
-    public CollectibleItemType TargetItemType
-    {
-        get => _targetItemType;
-        set => _targetItemType = value;
-    }
-
+    public CollectibleItemType TargetItemType { get; }
     public delegate Vector2Int EvalDestDel();
-    public EvalDestDel EvalDest = delegate () { return Vector2Int.zero; };
 
-    public ActionNode(EvalDestDel evaluateFunc, BehaviourTree BTree, CollectibleItemType TargetItemType)
+    private readonly EvalDestDel _evalDest;
+
+    public ActionNode(EvalDestDel evaluateFunc, BehaviourTree bTree, CollectibleItemType targetItemType)
     {
-        this.BTree = BTree;
-        this.EvalDest = evaluateFunc;
-        this.TargetItemType = TargetItemType;
+        BTree = bTree;
+        _evalDest = evaluateFunc;
+        TargetItemType = targetItemType;
         NodeType = NodeType.Action;
     }
 
     public override Vector2Int GetActionDestination()
     {
         BTree.CurrentAction = this;
-        return EvalDest();
+        return _evalDest();
     }
 
     // common nodes

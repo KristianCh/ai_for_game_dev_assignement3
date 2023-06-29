@@ -16,12 +16,12 @@ public class HumanPlayer : AbstractPlayer
     [SerializeField]
     private KeyCode rightKey = KeyCode.D;
 
-    private Vector2Int nextTileDestination;
+    private Vector2Int _nextTileDestination;
 
     public override void OnGameStarted()
     {
         base.OnGameStarted();
-        nextTileDestination = CurrentTile;
+        _nextTileDestination = CurrentTile;
     }
 
     protected override void Update()
@@ -36,23 +36,23 @@ public class HumanPlayer : AbstractPlayer
 
     protected override Vector2Int GetNextPathTile()
     {
-        return nextTileDestination;
+        return _nextTileDestination;
     }
 
     private void ProcessKeyboardInput()
     {
-        Vector2Int desiredTile = GetDesiredTileDestination();
+        var desiredTile = GetDesiredTileDestination();
 
         if (_parentMaze.IsValidTileOfType(desiredTile, MazeTileType.Free))
         {
-            nextTileDestination = desiredTile;
+            _nextTileDestination = desiredTile;
         }
     }
 
     private Vector2Int GetDesiredTileDestination()
     {
-        Vector2Int currTile = CurrentTile;
-        Vector2Int desiredTile = nextTileDestination;
+        var currTile = CurrentTile;
+        var desiredTile = _nextTileDestination;
 
         if (Input.GetKey(upKey))
         {

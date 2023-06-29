@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SequenceNode : AbstractNode
 {
-    private List<AbstractNode> _actionSequence = new List<AbstractNode>();
+    private readonly List<AbstractNode> _actionSequence = new List<AbstractNode>();
     private int _sequencePosition;
 
     public SequenceNode(BehaviourTree btree)
@@ -71,15 +71,15 @@ public class SequenceNode : AbstractNode
     public override void AdvanceInSequence()
     {
         _sequencePosition++;
-        if (_sequencePosition >= _actionSequence.Count)
+        if (_sequencePosition < _actionSequence.Count) 
+            return;
+        
+        _sequencePosition = 0;
+        if (BTree.CurrentRoot != HeldRoot)
         {
-            _sequencePosition = 0;
-            if (BTree.CurrentRoot != HeldRoot)
-            {
-                IsRoot = false;
-            }
-            BTree.CurrentRoot = HeldRoot;
-            HeldRoot = null;
+            IsRoot = false;
         }
+        BTree.CurrentRoot = HeldRoot;
+        HeldRoot = null;
     }
 }

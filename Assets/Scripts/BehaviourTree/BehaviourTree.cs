@@ -9,7 +9,7 @@ public class BehaviourTree
     private ActionNode _currentAction;
     private Vector2Int _currentActionDestination;
 
-    private bool WasRootSet = false;
+    private bool _wasRootSet = false;
 
     public AbstractNode Root
     {
@@ -37,9 +37,9 @@ public class BehaviourTree
 
     public Vector2Int Evaluate()
     {
-        if (!WasRootSet)
+        if (!_wasRootSet)
         {
-            WasRootSet = true;
+            _wasRootSet = true;
             _currentRoot = _root;
         }
 
@@ -55,22 +55,15 @@ public class BehaviourTree
 
     public bool CheckFail()
     {
-        if (_currentAction != null)
+        if (_currentAction == null) return true;
+        switch (_currentAction.TargetItemType)
         {
-            if (_currentAction.TargetItemType == CollectibleItemType.None)
-            {
+            case CollectibleItemType.None:
+            case CollectibleItemType.Any when Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y] != null:
                 return false;
-            }
-            if (_currentAction.TargetItemType == CollectibleItemType.Any && Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y] != null)
-            {
-                return false;
-            }
-            if (Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y] != null &&
-                _currentAction.TargetItemType == Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y].Type)
-            {
-                return false;
-            }
         }
-        return true;
+
+        return Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y] == null ||
+               _currentAction.TargetItemType != Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y].Type;
     }
 }

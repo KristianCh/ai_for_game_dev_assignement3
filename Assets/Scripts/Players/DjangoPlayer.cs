@@ -13,23 +13,20 @@ public class DjangoPlayer : ComputerPlayer
         PathTarget = CurrentTile;
         _behaviourTree = new BehaviourTree();
 
-        ConditionNode CanSpeedUp = new ConditionNode( delegate ()
-        {
-            return (!MaxMovementSpeedReached && GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.IncreaseMovementSpeed));
-        }, _behaviourTree);
+        var canSpeedUp = new ConditionNode(
+            () => (!MaxMovementSpeedReached &&
+                   GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.IncreaseMovementSpeed)), _behaviourTree);
 
-        ConditionNode IsAddPointWayCloserThanSpeedUp = new ConditionNode( delegate() 
-        {
-            return 
-            (
-                GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.AddPoint) &&
-                GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.AddPoint) * 10.0f <
-                GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.IncreaseMovementSpeed)
-            );
-        }, _behaviourTree);
+        var isAddPointWayCloserThanSpeedUp = new ConditionNode(() => (
+            GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.AddPoint) &&
+            GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.AddPoint) *
+            10.0f <
+            GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile,
+                CollectibleItemType.IncreaseMovementSpeed)
+        ), _behaviourTree);
 
-        ConditionNode existsAddPoint = ConditionNode.ExistsAddPoint(_behaviourTree);
-        ConditionNode existsRespawnAll = ConditionNode.ExistsRespawnAll(_behaviourTree);
+        var existsAddPoint = ConditionNode.ExistsAddPoint(_behaviourTree);
+        var existsRespawnAll = ConditionNode.ExistsRespawnAll(_behaviourTree);
 
         existsRespawnAll.SetLeft(ActionNode.GetClosestRespawnAll(this, _behaviourTree));
         existsRespawnAll.SetRight(new ActionNode(delegate ()
@@ -40,20 +37,20 @@ public class DjangoPlayer : ComputerPlayer
         existsAddPoint.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
         existsAddPoint.SetRight(existsRespawnAll);
 
-        IsAddPointWayCloserThanSpeedUp.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
-        IsAddPointWayCloserThanSpeedUp.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
+        isAddPointWayCloserThanSpeedUp.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
+        isAddPointWayCloserThanSpeedUp.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
 
-        CanSpeedUp.SetLeft(IsAddPointWayCloserThanSpeedUp);
-        CanSpeedUp.SetRight(existsAddPoint);
+        canSpeedUp.SetLeft(isAddPointWayCloserThanSpeedUp);
+        canSpeedUp.SetRight(existsAddPoint);
 
 
-        _behaviourTree.Root = CanSpeedUp;
+        _behaviourTree.Root = canSpeedUp;
     }
 
 
     protected override void EvaluateDecisions(Maze maze, List<AbstractPlayer> players, List<CollectibleItem> spawnedCollectibles, float remainingGameTime)
     {
-        bool didFail = _behaviourTree.CheckFail();
+        var didFail = _behaviourTree.CheckFail();
 
         if (pathTilesQueue.Count == 0 || _behaviourTree.CurrentActionDestination != PathTarget || didFail || MarkSucceeded)
         {
@@ -66,8 +63,8 @@ public class DjangoPlayer : ComputerPlayer
                 MarkSucceeded = false;
                 _behaviourTree.CurrentAction.Succeed();
             }
-            Vector2Int start = CurrentTile;
-            Vector2Int end = _behaviourTree.Evaluate();
+            var start = CurrentTile;
+            var end = _behaviourTree.Evaluate();
 
             if (end == start)
             {
@@ -75,7 +72,7 @@ public class DjangoPlayer : ComputerPlayer
                 return;
             }
 
-            List<Vector2Int> path = GetPathFromTo(start, end);
+            var path = GetPathFromTo(start, end);
             if (path.Count != CurrentPathLength)
             {
                 CurrentPathLength = path.Count;

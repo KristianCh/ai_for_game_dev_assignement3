@@ -17,21 +17,18 @@ public class TangoPlayer : ComputerPlayer
         PathTarget = CurrentTile;
         _behaviourTree = new BehaviourTree();
 
-        ConditionNode GetCloserAddSpeed = new ConditionNode(delegate ()
-        {
-            return
-            (
-                GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.AddPoint) <
-                GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.IncreaseMovementSpeed) ||
-                MaxMovementSpeedReached
-            );
-        }, _behaviourTree);
+        var getCloserAddSpeed = new ConditionNode(() => (
+            GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.AddPoint) <
+            GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile,
+                CollectibleItemType.IncreaseMovementSpeed) ||
+            MaxMovementSpeedReached
+        ), _behaviourTree);
 
-        GetCloserAddSpeed.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
-        GetCloserAddSpeed.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
+        getCloserAddSpeed.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
+        getCloserAddSpeed.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
 
         SelectorNode selector = new SelectorNode(_behaviourTree);
-        selector.AddNodeToSequence(GetCloserAddSpeed);
+        selector.AddNodeToSequence(getCloserAddSpeed);
         selector.AddNodeToSequence(ActionNode.GetClosestAny(this, _behaviourTree));
 
         _behaviourTree.Root = selector;
