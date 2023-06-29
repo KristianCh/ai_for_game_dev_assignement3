@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // maze tile includes data for each tile needed during search
@@ -256,19 +257,19 @@ public class AStar
         _end = end;
 
         // constructs grid of maze tiles from input maze
-        for (int y = 0; y < this._maze.MazeTiles.Count; y++)
+        for (var y = 0; y < _maze.MazeTiles.Count; y++)
         {
             _mazeTiles.Add(new List<MazeTile>());
-            for (int x = 0; x < this._maze.MazeTiles[y].Count; x++)
+            for (var x = 0; x < _maze.MazeTiles[y].Count; x++)
             {
-                _mazeTiles[y].Add(new MazeTile(this._maze.MazeTiles[y][x], new Vector2Int(x, y)));
+                _mazeTiles[y].Add(new MazeTile(_maze.MazeTiles[y][x], new Vector2Int(x, y)));
             }
         }
 
         // insert starting tile to queue
-        _queue.Insert(_mazeTiles[this._start.y][this._start.x]);
+        _queue.Insert(_mazeTiles[_start.y][_start.x]);
         // set current tile values
-        var current = _mazeTiles[this._start.y][this._start.x];
+        var current = _mazeTiles[_start.y][_start.x];
         current.CurrentDistance = 0;
         current.Priority = 0;
     }
@@ -290,23 +291,19 @@ public class AStar
             var neighbours = Neighbours(_mazeTiles, _current.GridPos);
 
             // calculate distances and priorities to neighbours
-            foreach (MazeTile neighbour in neighbours)
+            foreach (var neighbour in neighbours.Where(n => !n.Visited))
             {
                 // get priority for neighbour
-                float priority = _current.CurrentDistance + Heuristic(neighbour.GridPos, _end);
-                // if neighbour hasn't already been visited
-                if (!neighbour.Visited)
-                {
-                    // if neighbours current saved priority is higher, update neighbours priority, distance and previous tile
-                    if (neighbour.Priority > priority)
-                    {
-                        neighbour.CurrentDistance = _current.CurrentDistance + (_current.GridPos - neighbour.GridPos).magnitude;
-                        neighbour.Priority = priority;
-                        neighbour.Previous = _current;
-                        if (!_queue.HeapList.Contains(neighbour)) _queue.Insert(neighbour);
-                        else _queue.HeapifyUp(true, neighbour.IndexInHeap);
-                    }
-                }
+                var priority = _current.CurrentDistance + Heuristic(neighbour.GridPos, _end);
+                // if neighbours current saved priority is higher, update neighbours priority, distance and previous tile
+                if (!(neighbour.Priority > priority)) 
+                    continue;
+                
+                neighbour.CurrentDistance = _current.CurrentDistance + (_current.GridPos - neighbour.GridPos).magnitude;
+                neighbour.Priority = priority;
+                neighbour.Previous = _current;
+                if (!_queue.HeapList.Contains(neighbour)) _queue.Insert(neighbour);
+                else _queue.HeapifyUp(true, neighbour.IndexInHeap);
             }            
         }
         else
