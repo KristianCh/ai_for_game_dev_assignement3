@@ -1,0 +1,9 @@
+Items spritesheet is a combination of following sources:
+
+GUI Buttons 64x64 by NewHopeGames
+Link: https://opengameart.org/content/gui-buttons-64x64
+License: Public Domain
+
+FREE Unique icons pack [N-01] [64x64]; 39 count
+Link: https://opengameart.org/content/free-unique-icons-pack-n-01-64x64-39-count
+License: Public Domain

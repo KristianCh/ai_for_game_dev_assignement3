@@ -1,0 +1,11 @@
+Gameplay music: [Chiptune Adventures] 1. Stage 1 by Juhani Junkala
+Link: https://opengameart.org/content/4-chiptunes-adventure
+License: Public Domain
+
+respawnAllCollectible – Pick04 by sharesynth
+Link: https://freesound.org/people/sharesynth/sounds/344518/
+License: Public Domain
+
+addPointCollectible – coin9 by Free-Rush
+Link: https://freesound.org/people/Free-Rush/sounds/336936/
+License: Public Domain

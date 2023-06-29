@@ -1,0 +1,12 @@
+Django:
+	If Django can speed up, meaning, if he isn't at max speed and there is a IncreaseMovementSpeed collectible on the map, he will go for it unless there is an AddPoint collectible way closer, in which case, he prefers that.
+In case he cannot speed up, he will go for an AddPoint collectible if one exists, otherwise he will go for a RespawnAll collectible if one exists and if even that doesn't exist, he will move to the players position.
+His thing is to try and get as fast as possible and then be able to get anything faster than the others.
+Mango:
+	Mango first checks, if he can get to the AddPoint collectible closest to the human player faster than the human player. If he can, he first tries to take this point and then take the closest RespawnAll collectible. 
+If he cannot, he tries to take the closest IncreaseMovementSpeed collectible if one exists, otherwise he tries to take any collectible that is closest. 
+He is supposed to make sure, that the player has a bad time and the bots.
+Tango:
+	Tango tries to evenly get IncreaseMovementSpeed collectibles or AddPoint collectibles, whichever is closer. If he is at max speed, he will only try to get AddPoint collectibles. 
+If this fails, he will just go for any collectible that is the closest.
+He is meant to be just a fairly balanced player, who doesn't really specialize in anything.
