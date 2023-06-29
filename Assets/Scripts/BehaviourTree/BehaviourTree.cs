@@ -4,31 +4,13 @@ using UnityEngine;
 
 public class BehaviourTree
 {
-    private AbstractNode _root;
-    private AbstractNode _currentRoot;
-    private ActionNode _currentAction;
     private Vector2Int _currentActionDestination;
-
     private bool _wasRootSet = false;
-
-    public AbstractNode Root
-    {
-        get => _root;
-        set => _root = value;
-    }
-
-    public AbstractNode CurrentRoot
-    {
-        get => _currentRoot;
-        set => _currentRoot = value;
-    }
-
-    public ActionNode CurrentAction
-    {
-        get => _currentAction;
-        set => _currentAction = value;
-    }
-
+    
+    public AbstractNode Root { get; set; }
+    public AbstractNode CurrentRoot { get; set; }
+    public ActionNode CurrentAction { get; set; }
+    
     public Vector2Int CurrentActionDestination
     {
         get => _currentActionDestination;
@@ -40,10 +22,10 @@ public class BehaviourTree
         if (!_wasRootSet)
         {
             _wasRootSet = true;
-            _currentRoot = _root;
+            CurrentRoot = Root;
         }
 
-        AbstractNode currentNode = _currentRoot;
+        AbstractNode currentNode = CurrentRoot;
         
         while (currentNode.NodeType != NodeType.Action)
         {
@@ -55,8 +37,8 @@ public class BehaviourTree
 
     public bool CheckFail()
     {
-        if (_currentAction == null) return true;
-        switch (_currentAction.TargetItemType)
+        if (CurrentAction == null) return true;
+        switch (CurrentAction.TargetItemType)
         {
             case CollectibleItemType.None:
             case CollectibleItemType.Any when Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y] != null:
@@ -64,6 +46,6 @@ public class BehaviourTree
         }
 
         return Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y] == null ||
-               _currentAction.TargetItemType != Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y].Type;
+               CurrentAction.TargetItemType != Blackboard.Instance.CollectiblesAtLocations[_currentActionDestination.x, _currentActionDestination.y].Type;
     }
 }
