@@ -1,34 +1,34 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 // maze tile includes data for each tile needed during search
 public class MazeTile
 {
-    public MazeTile(MazeTileType _type, Vector2Int _gridPos, float _currentDistance = float.MaxValue, float _priority = float.MaxValue, bool _visited = false, MazeTile _previous = null)
-    {
-        type = _type;
-        gridPos = _gridPos;
-        currentDistance = _currentDistance;
-        priority = _priority;
-        visited = _visited;
-        previous = _previous;
-    }
-
     // type of tile
-    public MazeTileType type;
     // position in grid
-    public Vector2Int gridPos;
     // current distance of tile from starting tile
-    public float currentDistance = float.MaxValue;
     // current priority of tile
-    public float priority = float.MaxValue;
     // was tile already visited
-    public bool visited = false;
     // index in heap
-    public int indexInHeap = -1;
     // current tile from which this one was accessed
-    public MazeTile previous = null;
+    public MazeTileType Type { get; }
+    public Vector2Int GridPos { get; }
+    public float CurrentDistance { get; set; }
+    public float Priority { get; set; }
+    public bool Visited { get; set; } = false;
+    public int IndexInHeap { get; set; } = -1;
+    public MazeTile Previous { get; set; } = null;
+
+    public MazeTile(MazeTileType type, Vector2Int gridPos, float currentDistance = float.MaxValue, float priority = float.MaxValue, bool visited = false, MazeTile previous = null)
+    {
+        Type = type;
+        GridPos = gridPos;
+        CurrentDistance = currentDistance;
+        Priority = priority;
+        Visited = visited;
+        Previous = previous;
+    }
 }
 
 // priority queue implemented using a min-heap
@@ -39,12 +39,10 @@ public class PriorityQueue
     // swaps two tiles in heap at input indices
     private void Swap(int a, int b)
     {
-        MazeTile temp = heapList[a];
-        heapList[a] = heapList[b];
-        heapList[b] = temp;
+        (heapList[a], heapList[b]) = (heapList[b], heapList[a]);
 
-        heapList[a].indexInHeap = a;
-        heapList[b].indexInHeap = b;
+        heapList[a].IndexInHeap = a;
+        heapList[b].IndexInHeap = b;
     }
 
     // moves tile up in heap until heap properties are restored, can start from input tile index, else uses last tile in heap
@@ -53,7 +51,7 @@ public class PriorityQueue
         if (!useArg) i = heapList.Count - 1;
         int parent = (int)Mathf.Floor((i - 1) / 2);
 
-        while (i > 0 && heapList[parent].priority > heapList[i].priority)
+        while (i > 0 && heapList[parent].Priority > heapList[i].Priority)
         {
             Swap(i, parent);
             i = parent;
@@ -69,29 +67,29 @@ public class PriorityQueue
         int rightChild = 2 * i + 2;
 
         int smallest = i;
-        if (heapList.Count > leftChild && heapList[leftChild].priority < heapList[i].priority)
+        if (heapList.Count > leftChild && heapList[leftChild].Priority < heapList[i].Priority)
         {
             smallest = leftChild;
         }
-        if (heapList.Count > leftChild && heapList.Count > rightChild && heapList[rightChild].priority < heapList[i].priority && 
-            heapList[rightChild].priority < heapList[leftChild].priority)
+        if (heapList.Count > leftChild && heapList.Count > rightChild && heapList[rightChild].Priority < heapList[i].Priority && 
+            heapList[rightChild].Priority < heapList[leftChild].Priority)
         {
             smallest = rightChild;
         }
 
-        while (heapList[i].priority > heapList[smallest].priority)
+        while (heapList[i].Priority > heapList[smallest].Priority)
         {
             Swap(i, smallest);
             i = smallest;
             leftChild = 2 * i + 1;
             rightChild = 2 * i + 2;
             smallest = i;
-            if (heapList.Count > leftChild && heapList[leftChild].priority < heapList[i].priority)
+            if (heapList.Count > leftChild && heapList[leftChild].Priority < heapList[i].Priority)
             {
                 smallest = leftChild;
             }
-            if (heapList.Count > leftChild && heapList.Count > rightChild && heapList[rightChild].priority < heapList[i].priority && 
-                heapList[rightChild].priority < heapList[leftChild].priority)
+            if (heapList.Count > leftChild && heapList.Count > rightChild && heapList[rightChild].Priority < heapList[i].Priority && 
+                heapList[rightChild].Priority < heapList[leftChild].Priority)
             {
                 smallest = rightChild;
             }
@@ -101,6 +99,7 @@ public class PriorityQueue
     // runs heapify up for each leaf node
     public void FixHeap()
     {
+        // ReSharper disable once PossibleLossOfFraction
         for (int i = (int)Mathf.Floor(heapList.Count/2); i < heapList.Count; i++)
         {
             HeapifyUp(true, i);
@@ -116,7 +115,7 @@ public class PriorityQueue
     // inserts a new tile to heap
     public void Insert(MazeTile tile)
     {
-        tile.indexInHeap = heapList.Count;
+        tile.IndexInHeap = heapList.Count;
         heapList.Add(tile);
         HeapifyUp(false);
     }
@@ -135,65 +134,67 @@ public class PriorityQueue
 }
 
 // class managing calculation of a*
+[Serializable]
 public class AStar
 {
     // weight of heuristic, 0 for null heuristic, 1 for euclidean distance, over 1 for faster search but path may not be optimal. Set from game manager
-    public float heuristicWeight = 1.0f;
+    [SerializeField] 
+    private float _HeuristicWeight = 1.0f;
     // grid of maze tiles
-    List<List<MazeTile>> mazeTiles;
+    private List<List<MazeTile>> _mazeTiles;
     // priority queue for calculation
-    PriorityQueue queue;
+    private PriorityQueue _queue;
     // current maze tile
-    MazeTile current;
+    private MazeTile _current;
     // input maze
-    Maze maze;
+    private Maze _maze;
     // start and end positions
-    Vector2Int start;
-    Vector2Int end;
+    private Vector2Int _start;
+    private Vector2Int _end;
 
     // gets all valid neighbour tiles for input grid of maze tiles and tile position
-    public static List<MazeTile> Neighbours(List<List<MazeTile>> mazeTiles, Vector2Int pos)
+    private static List<MazeTile> Neighbours(List<List<MazeTile>> mazeTiles, Vector2Int pos)
     {
         List<MazeTile> neighbours = new List<MazeTile>();
         // left, down, right, up tiles
-        if (pos.x > 0 && mazeTiles[pos.y][pos.x - 1].type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y][pos.x - 1]);
-        if (pos.y > 0 && mazeTiles[pos.y - 1][pos.x].type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y - 1][pos.x]);
-        if (pos.x < mazeTiles[0].Count - 1 && mazeTiles[pos.y][pos.x + 1].type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y][pos.x + 1]);
-        if (pos.y < mazeTiles.Count - 1 && mazeTiles[pos.y + 1][pos.x].type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y + 1][pos.x]);
+        if (pos.x > 0 && mazeTiles[pos.y][pos.x - 1].Type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y][pos.x - 1]);
+        if (pos.y > 0 && mazeTiles[pos.y - 1][pos.x].Type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y - 1][pos.x]);
+        if (pos.x < mazeTiles[0].Count - 1 && mazeTiles[pos.y][pos.x + 1].Type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y][pos.x + 1]);
+        if (pos.y < mazeTiles.Count - 1 && mazeTiles[pos.y + 1][pos.x].Type == MazeTileType.Free) neighbours.Add(mazeTiles[pos.y + 1][pos.x]);
 
         // diagonal tiles
         if (
             pos.x > 0 && pos.y > 0 &&
-            mazeTiles[pos.y - 1][pos.x - 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y][pos.x - 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y - 1][pos.x].type == MazeTileType.Free
+            mazeTiles[pos.y - 1][pos.x - 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y][pos.x - 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y - 1][pos.x].Type == MazeTileType.Free
             )
         {
             neighbours.Add(mazeTiles[pos.y - 1][pos.x - 1]);
         }
         if (
             pos.x < mazeTiles[0].Count - 1 && pos.y > 0 &&
-            mazeTiles[pos.y - 1][pos.x + 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y][pos.x + 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y - 1][pos.x].type == MazeTileType.Free
+            mazeTiles[pos.y - 1][pos.x + 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y][pos.x + 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y - 1][pos.x].Type == MazeTileType.Free
             )
         {
             neighbours.Add(mazeTiles[pos.y - 1][pos.x + 1]);
         }
         if (
             pos.x > 0 && pos.y < mazeTiles.Count - 1 &&
-            mazeTiles[pos.y + 1][pos.x - 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y][pos.x - 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y + 1][pos.x].type == MazeTileType.Free
+            mazeTiles[pos.y + 1][pos.x - 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y][pos.x - 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y + 1][pos.x].Type == MazeTileType.Free
             )
         {
             neighbours.Add(mazeTiles[pos.y + 1][pos.x - 1]);
         }
         if (
             pos.x < mazeTiles[0].Count - 1 && pos.y < mazeTiles.Count - 1 &&
-            mazeTiles[pos.y + 1][pos.x + 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y][pos.x + 1].type == MazeTileType.Free &&
-            mazeTiles[pos.y + 1][pos.x].type == MazeTileType.Free
+            mazeTiles[pos.y + 1][pos.x + 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y][pos.x + 1].Type == MazeTileType.Free &&
+            mazeTiles[pos.y + 1][pos.x].Type == MazeTileType.Free
             )
         {
             neighbours.Add(mazeTiles[pos.y + 1][pos.x + 1]);
@@ -202,106 +203,10 @@ public class AStar
         return neighbours;
     }
 
-    // calculates heuristic value for position
-    public float Heuristic(Vector2Int pos, Vector2Int end) 
-    {
-        return (end - pos).magnitude * heuristicWeight;
-    }
-
-    // initializes values for search
-    public void InitSearch(Maze _maze, Vector2Int _start, Vector2Int _end)
-    {
-        // sets default values
-        mazeTiles = new List<List<MazeTile>>();
-        queue = new PriorityQueue();
-        maze = _maze;
-        start = _start;
-        end = _end;
-
-        // constructs grid of maze tiles from input maze
-        for (int y = 0; y < maze.MazeTiles.Count; y++)
-        {
-            mazeTiles.Add(new List<MazeTile>());
-            for (int x = 0; x < maze.MazeTiles[y].Count; x++)
-            {
-                mazeTiles[y].Add(new MazeTile(maze.MazeTiles[y][x], new Vector2Int(x, y)));
-            }
-        }
-
-        // insert starting tile to queue
-        queue.Insert(mazeTiles[start.y][start.x]);
-        // set current tile values
-        MazeTile current = mazeTiles[start.y][start.x];
-        current.currentDistance = 0;
-        current.priority = 0;
-    }
-
-    // calculates one step of search, returns true if search ended (got to end tile or no solution) and false otherwise
-    public bool SearchStep()
-    {
-        if (!queue.IsEmpty())
-        {
-            // get first tile in queue
-            current = queue.Pop();
-            if (current == mazeTiles[end.y][end.x])
-            {
-                return true;
-            }
-            // mark current tile as visited
-            current.visited = true;
-            // get neighbours for current tile
-            List<MazeTile> neighbours = Neighbours(mazeTiles, current.gridPos);
-
-            // calculate distances and priorities to neighbours
-            foreach (MazeTile neighbour in neighbours)
-            {
-                // get priority for neighbour
-                float priority = current.currentDistance + Heuristic(neighbour.gridPos, end);
-                // if neighbour hasn't already been visited
-                if (!neighbour.visited)
-                {
-                    // if neighbours current saved priority is higher, update neighbours priority, distance and previous tile
-                    if (neighbour.priority > priority)
-                    {
-                        neighbour.currentDistance = current.currentDistance + (current.gridPos - neighbour.gridPos).magnitude;
-                        neighbour.priority = priority;
-                        neighbour.previous = current;
-                        if (!queue.heapList.Contains(neighbour)) queue.Insert(neighbour);
-                        else queue.HeapifyUp(true, neighbour.indexInHeap);
-                    }
-                }
-            }            
-        }
-        else
-        {
-            return true;
-        }
-        return false;
-    }
-
-    // construct path starting from end position back to first and then reversing it
-    public List<Vector2Int> ConstructPath()
-    {
-        MazeTile endTile = current;
-        List<Vector2Int> path = new List<Vector2Int>();
-
-        // return empty if there is no solution
-        if (endTile.gridPos != end) return path;
-
-        path.Add(endTile.gridPos);
-        while (endTile.gridPos != start)
-        {
-            endTile = endTile.previous;
-            path.Add(endTile.gridPos);
-        }
-        path.Reverse();
-        return path;
-    }
-
     // perform A* search and return final path
-    public List<Vector2Int> CalculatePath(Maze _maze, Vector2Int _start, Vector2Int _end)
+    public List<Vector2Int> CalculatePath(Maze maze, Vector2Int start, Vector2Int end)
     {
-        InitSearch(_maze, _start, _end);
+        InitSearch(maze, start, end);
         List<Vector2Int> path = new List<Vector2Int>();
         bool search = true;
 
@@ -317,7 +222,7 @@ public class AStar
         return path;
     }
 
-    public float CalculatePathLength(Maze _maze, Vector2Int _start, Vector2Int _end)
+    public float CalculatePathLength(Maze maze, Vector2Int start, Vector2Int end)
     {
         InitSearch(_maze, _start, _end);
         bool search = true;
@@ -328,9 +233,105 @@ public class AStar
             // if search is finished, get length
             if (!search)
             {
-                return current.currentDistance;
+                return _current.CurrentDistance;
             }
         }
         return 0;
+    }
+
+    // calculates heuristic value for position
+    private float Heuristic(Vector2Int pos, Vector2Int end) 
+    {
+        return (end - pos).magnitude * _HeuristicWeight;
+    }
+
+    // initializes values for search
+    private void InitSearch(Maze maze, Vector2Int start, Vector2Int end)
+    {
+        // sets default values
+        _mazeTiles = new List<List<MazeTile>>();
+        _queue = new PriorityQueue();
+        _maze = maze;
+        _start = start;
+        _end = end;
+
+        // constructs grid of maze tiles from input maze
+        for (int y = 0; y < this._maze.MazeTiles.Count; y++)
+        {
+            _mazeTiles.Add(new List<MazeTile>());
+            for (int x = 0; x < this._maze.MazeTiles[y].Count; x++)
+            {
+                _mazeTiles[y].Add(new MazeTile(this._maze.MazeTiles[y][x], new Vector2Int(x, y)));
+            }
+        }
+
+        // insert starting tile to queue
+        _queue.Insert(_mazeTiles[this._start.y][this._start.x]);
+        // set current tile values
+        var current = _mazeTiles[this._start.y][this._start.x];
+        current.CurrentDistance = 0;
+        current.Priority = 0;
+    }
+
+    // calculates one step of search, returns true if search ended (got to end tile or no solution) and false otherwise
+    private bool SearchStep()
+    {
+        if (!_queue.IsEmpty())
+        {
+            // get first tile in queue
+            _current = _queue.Pop();
+            if (_current == _mazeTiles[_end.y][_end.x])
+            {
+                return true;
+            }
+            // mark current tile as visited
+            _current.Visited = true;
+            // get neighbours for current tile
+            List<MazeTile> neighbours = Neighbours(_mazeTiles, _current.GridPos);
+
+            // calculate distances and priorities to neighbours
+            foreach (MazeTile neighbour in neighbours)
+            {
+                // get priority for neighbour
+                float priority = _current.CurrentDistance + Heuristic(neighbour.GridPos, _end);
+                // if neighbour hasn't already been visited
+                if (!neighbour.Visited)
+                {
+                    // if neighbours current saved priority is higher, update neighbours priority, distance and previous tile
+                    if (neighbour.Priority > priority)
+                    {
+                        neighbour.CurrentDistance = _current.CurrentDistance + (_current.GridPos - neighbour.GridPos).magnitude;
+                        neighbour.Priority = priority;
+                        neighbour.Previous = _current;
+                        if (!_queue.heapList.Contains(neighbour)) _queue.Insert(neighbour);
+                        else _queue.HeapifyUp(true, neighbour.IndexInHeap);
+                    }
+                }
+            }            
+        }
+        else
+        {
+            return true;
+        }
+        return false;
+    }
+
+    // construct path starting from end position back to first and then reversing it
+    private List<Vector2Int> ConstructPath()
+    {
+        MazeTile endTile = _current;
+        List<Vector2Int> path = new List<Vector2Int>();
+
+        // return empty if there is no solution
+        if (endTile.GridPos != _end) return path;
+
+        path.Add(endTile.GridPos);
+        while (endTile.GridPos != _start)
+        {
+            endTile = endTile.Previous;
+            path.Add(endTile.GridPos);
+        }
+        path.Reverse();
+        return path;
     }
 }

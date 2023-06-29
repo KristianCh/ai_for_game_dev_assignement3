@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class SequenceNode : AbstractNode
 {
-    private List<AbstractNode> ActionSequence = new List<AbstractNode>();
-    private int SequencePosition;
+    private List<AbstractNode> _actionSequence = new List<AbstractNode>();
+    private int _sequencePosition;
 
     public SequenceNode(BehaviourTree btree)
     {
@@ -23,7 +23,7 @@ public class SequenceNode : AbstractNode
 
     public override void Fail()
     {
-        SequencePosition = ActionSequence.Count;
+        _sequencePosition = _actionSequence.Count;
         AdvanceInSequence();
         if (Parent != null)
         {
@@ -36,7 +36,7 @@ public class SequenceNode : AbstractNode
         if (outcome && !InverterNode || !outcome && InverterNode)
         {
             AdvanceInSequence();
-            if (SequencePosition == 0)
+            if (_sequencePosition == 0)
             {
                 Succeed();
             }
@@ -49,7 +49,7 @@ public class SequenceNode : AbstractNode
 
     public void AddNodeToSequence(AbstractNode node)
     {
-        ActionSequence.Add(node);
+        _actionSequence.Add(node);
         node.Parent = this;
     }
 
@@ -61,19 +61,19 @@ public class SequenceNode : AbstractNode
             IsRoot = true;
             BTree.CurrentRoot = this;
         }
-        if (ActionSequence.Count > 0)
+        if (_actionSequence.Count > 0)
         {
-            return ActionSequence[SequencePosition];
+            return _actionSequence[_sequencePosition];
         }
         return null;
     }
 
     public override void AdvanceInSequence()
     {
-        SequencePosition++;
-        if (SequencePosition >= ActionSequence.Count)
+        _sequencePosition++;
+        if (_sequencePosition >= _actionSequence.Count)
         {
-            SequencePosition = 0;
+            _sequencePosition = 0;
             if (BTree.CurrentRoot != HeldRoot)
             {
                 IsRoot = false;

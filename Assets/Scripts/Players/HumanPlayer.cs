@@ -43,7 +43,7 @@ public class HumanPlayer : AbstractPlayer
     {
         Vector2Int desiredTile = GetDesiredTileDestination();
 
-        if (parentMaze.IsValidTileOfType(desiredTile, MazeTileType.Free))
+        if (_parentMaze.IsValidTileOfType(desiredTile, MazeTileType.Free))
         {
             nextTileDestination = desiredTile;
         }

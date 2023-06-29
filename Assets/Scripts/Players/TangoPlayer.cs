@@ -10,12 +10,12 @@ public class TangoPlayer : ComputerPlayer
 
         // Wikipedia says:
         // Tango is a partner dance and social dance that originated in the 1880s
-        // along the Río de la Plata, the natural border between Argentina and Uruguay.
+        // along the RÃ­o de la Plata, the natural border between Argentina and Uruguay.
         // ---
         // Is this relevant? Probably not but it is nice to learn something, right?
 
-        pathTarget = CurrentTile;
-        behaviourTree = new BehaviourTree();
+        PathTarget = CurrentTile;
+        _behaviourTree = new BehaviourTree();
 
         ConditionNode GetCloserAddSpeed = new ConditionNode(delegate ()
         {
@@ -25,45 +25,45 @@ public class TangoPlayer : ComputerPlayer
                 GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.IncreaseMovementSpeed) ||
                 MaxMovementSpeedReached
             );
-        }, behaviourTree);
+        }, _behaviourTree);
 
-        GetCloserAddSpeed.SetLeft(ActionNode.GetClosestAddPoint(this, behaviourTree));
-        GetCloserAddSpeed.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, behaviourTree));
+        GetCloserAddSpeed.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
+        GetCloserAddSpeed.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
 
-        SelectorNode selector = new SelectorNode(behaviourTree);
+        SelectorNode selector = new SelectorNode(_behaviourTree);
         selector.AddNodeToSequence(GetCloserAddSpeed);
-        selector.AddNodeToSequence(ActionNode.GetClosestAny(this, behaviourTree));
+        selector.AddNodeToSequence(ActionNode.GetClosestAny(this, _behaviourTree));
 
-        behaviourTree.Root = selector;
+        _behaviourTree.Root = selector;
     }
 
     protected override void EvaluateDecisions(Maze maze, List<AbstractPlayer> players, List<CollectibleItem> spawnedCollectibles, float remainingGameTime)
     {
-        bool didFail = behaviourTree.CheckFail();
+        bool didFail = _behaviourTree.CheckFail();
 
-        if (pathTilesQueue.Count == 0 || behaviourTree.CurrentActionDestination != pathTarget || didFail || MarkSucceeded)
+        if (pathTilesQueue.Count == 0 || _behaviourTree.CurrentActionDestination != PathTarget || didFail || MarkSucceeded)
         {
-            if (didFail && !(pathTilesQueue.Count == 0 || behaviourTree.CurrentActionDestination != pathTarget) && !MarkSucceeded)
+            if (didFail && !(pathTilesQueue.Count == 0 || _behaviourTree.CurrentActionDestination != PathTarget) && !MarkSucceeded)
             {
-                behaviourTree.CurrentAction.Fail();
+                _behaviourTree.CurrentAction.Fail();
             }
-            if (!didFail && behaviourTree.CurrentAction.TargetItemType == CollectibleItemType.None || MarkSucceeded)
+            if (!didFail && _behaviourTree.CurrentAction.TargetItemType == CollectibleItemType.None || MarkSucceeded)
             {
                 MarkSucceeded = false;
-                behaviourTree.CurrentAction.Succeed();
+                _behaviourTree.CurrentAction.Succeed();
             }
             Vector2Int start = CurrentTile;
-            Vector2Int end = behaviourTree.Evaluate();
+            Vector2Int end = _behaviourTree.Evaluate();
             List<Vector2Int> path = GetPathFromTo(start, end);
             if (path.Count != CurrentPathLength)
             {
                 CurrentPathLength = path.Count;
                 pathTilesQueue = new Queue<Vector2Int>(path);
-                pathTarget = end;
+                PathTarget = end;
 
                 for (int i = 0; i < path.Count - 1; i++)
                 {
-                    Debug.DrawLine(parentMaze.GetWorldPositionForMazeTile(path[i]), parentMaze.GetWorldPositionForMazeTile(path[i + 1]), Color.magenta, 1f);
+                    Debug.DrawLine(_parentMaze.GetWorldPositionForMazeTile(path[i]), _parentMaze.GetWorldPositionForMazeTile(path[i + 1]), Color.magenta, 1f);
                 }
             }
         }

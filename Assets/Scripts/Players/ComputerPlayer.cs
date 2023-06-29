@@ -5,13 +5,27 @@ using UnityEngine;
 public abstract class ComputerPlayer : AbstractPlayer
 {
     protected Queue<Vector2Int> pathTilesQueue = new Queue<Vector2Int>();
-    public Vector2Int pathTarget;
-    public float CurrentPathLength = 0;
-    public bool MarkSucceeded = false;
+    
+    private Vector2Int _pathTarget;
+    private float _currentPathLength = 0;
+    private bool _markSucceeded = false;
 
-    public override void OnGameStarted()
+    public Vector2Int PathTarget
     {
-        base.OnGameStarted();
+        get => _pathTarget;
+        set => _pathTarget = value;
+    }
+
+    public float CurrentPathLength
+    {
+        get => _currentPathLength;
+        set => _currentPathLength = value;
+    }
+
+    public bool MarkSucceeded
+    {
+        get => _markSucceeded;
+        set => _markSucceeded = value;
     }
 
     protected override void Update()
@@ -19,7 +33,7 @@ public abstract class ComputerPlayer : AbstractPlayer
         base.Update();
 
         EvaluateDecisions(
-            parentMaze,
+            _parentMaze,
             GameManager.Instance.Players,
             GameManager.Instance.SpawnedCollectibles,
             GameManager.Instance.TimeRemaining
@@ -65,10 +79,10 @@ public abstract class ComputerPlayer : AbstractPlayer
 
     public override void OnItemPickup(CollectibleItem item) 
     {
-        if (CurrentTile == behaviourTree.CurrentActionDestination)
+        if (CurrentTile == _behaviourTree.CurrentActionDestination)
         {
-            if (behaviourTree.CurrentAction.TargetItemType == CollectibleItemType.Any ||
-                behaviourTree.CurrentAction.TargetItemType == item.Type)
+            if (_behaviourTree.CurrentAction.TargetItemType == CollectibleItemType.Any ||
+                _behaviourTree.CurrentAction.TargetItemType == item.Type)
             {
                 MarkSucceeded = true;
             }

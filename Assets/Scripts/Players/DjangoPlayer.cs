@@ -10,13 +10,13 @@ public class DjangoPlayer : ComputerPlayer
 
         // This will be the real Django Unchained!
 
-        pathTarget = CurrentTile;
-        behaviourTree = new BehaviourTree();
+        PathTarget = CurrentTile;
+        _behaviourTree = new BehaviourTree();
 
         ConditionNode CanSpeedUp = new ConditionNode( delegate ()
         {
             return (!MaxMovementSpeedReached && GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.IncreaseMovementSpeed));
-        }, behaviourTree);
+        }, _behaviourTree);
 
         ConditionNode IsAddPointWayCloserThanSpeedUp = new ConditionNode( delegate() 
         {
@@ -26,52 +26,52 @@ public class DjangoPlayer : ComputerPlayer
                 GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.AddPoint) * 10.0f <
                 GameManager.Instance.GetDistanceToClosestCollectibleOfType(CurrentTile, CollectibleItemType.IncreaseMovementSpeed)
             );
-        }, behaviourTree);
+        }, _behaviourTree);
 
-        ConditionNode existsAddPoint = ConditionNode.ExistsAddPoint(behaviourTree);
-        ConditionNode existsRespawnAll = ConditionNode.ExistsRespawnAll(behaviourTree);
+        ConditionNode existsAddPoint = ConditionNode.ExistsAddPoint(_behaviourTree);
+        ConditionNode existsRespawnAll = ConditionNode.ExistsRespawnAll(_behaviourTree);
 
-        existsRespawnAll.SetLeft(ActionNode.GetClosestRespawnAll(this, behaviourTree));
+        existsRespawnAll.SetLeft(ActionNode.GetClosestRespawnAll(this, _behaviourTree));
         existsRespawnAll.SetRight(new ActionNode(delegate ()
         {
-            return parentMaze.GetMazeTileForWorldPosition(Blackboard.Instance.HumanPlayer.transform.position);
-        }, behaviourTree, CollectibleItemType.None));
+            return _parentMaze.GetMazeTileForWorldPosition(Blackboard.Instance.HumanPlayer.transform.position);
+        }, _behaviourTree, CollectibleItemType.None));
 
-        existsAddPoint.SetLeft(ActionNode.GetClosestAddPoint(this, behaviourTree));
+        existsAddPoint.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
         existsAddPoint.SetRight(existsRespawnAll);
 
-        IsAddPointWayCloserThanSpeedUp.SetLeft(ActionNode.GetClosestAddPoint(this, behaviourTree));
-        IsAddPointWayCloserThanSpeedUp.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, behaviourTree));
+        IsAddPointWayCloserThanSpeedUp.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
+        IsAddPointWayCloserThanSpeedUp.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
 
         CanSpeedUp.SetLeft(IsAddPointWayCloserThanSpeedUp);
         CanSpeedUp.SetRight(existsAddPoint);
 
 
-        behaviourTree.Root = CanSpeedUp;
+        _behaviourTree.Root = CanSpeedUp;
     }
 
 
     protected override void EvaluateDecisions(Maze maze, List<AbstractPlayer> players, List<CollectibleItem> spawnedCollectibles, float remainingGameTime)
     {
-        bool didFail = behaviourTree.CheckFail();
+        bool didFail = _behaviourTree.CheckFail();
 
-        if (pathTilesQueue.Count == 0 || behaviourTree.CurrentActionDestination != pathTarget || didFail || MarkSucceeded)
+        if (pathTilesQueue.Count == 0 || _behaviourTree.CurrentActionDestination != PathTarget || didFail || MarkSucceeded)
         {
-            if (didFail && !(pathTilesQueue.Count == 0 || behaviourTree.CurrentActionDestination != pathTarget) && !MarkSucceeded)
+            if (didFail && !(pathTilesQueue.Count == 0 || _behaviourTree.CurrentActionDestination != PathTarget) && !MarkSucceeded)
             {
-                behaviourTree.CurrentAction.Fail();
+                _behaviourTree.CurrentAction.Fail();
             }
-            if (!didFail && behaviourTree.CurrentAction.TargetItemType == CollectibleItemType.None || MarkSucceeded)
+            if (!didFail && _behaviourTree.CurrentAction.TargetItemType == CollectibleItemType.None || MarkSucceeded)
             {
                 MarkSucceeded = false;
-                behaviourTree.CurrentAction.Succeed();
+                _behaviourTree.CurrentAction.Succeed();
             }
             Vector2Int start = CurrentTile;
-            Vector2Int end = behaviourTree.Evaluate();
+            Vector2Int end = _behaviourTree.Evaluate();
 
             if (end == start)
             {
-                behaviourTree.CurrentAction.Fail();
+                _behaviourTree.CurrentAction.Fail();
                 return;
             }
 
@@ -80,11 +80,11 @@ public class DjangoPlayer : ComputerPlayer
             {
                 CurrentPathLength = path.Count;
                 pathTilesQueue = new Queue<Vector2Int>(path);
-                pathTarget = end;
+                PathTarget = end;
 
                 for (int i = 0; i < path.Count - 1; i++)
                 {
-                    Debug.DrawLine(parentMaze.GetWorldPositionForMazeTile(path[i]), parentMaze.GetWorldPositionForMazeTile(path[i + 1]), Color.red, 1f);
+                    Debug.DrawLine(_parentMaze.GetWorldPositionForMazeTile(path[i]), _parentMaze.GetWorldPositionForMazeTile(path[i + 1]), Color.red, 1f);
                 }
             }
         }
