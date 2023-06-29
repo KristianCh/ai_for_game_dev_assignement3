@@ -40,27 +40,19 @@ public class ConditionNode : AbstractNode
     }
 
     // common nodes
-    public static ConditionNode ExistsAddPoint(BehaviourTree BTree)
+    public static ConditionNode ExistsAddPoint(BehaviourTree bTree)
     {
-        return new ConditionNode(delegate ()
-        {
-            return GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.AddPoint);
-        }, BTree);
+        return new ConditionNode(() => GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.AddPoint), bTree);
     }
 
-    public static ConditionNode ExistsIncreaseMovementSpeed(BehaviourTree BTree)
+    public static ConditionNode ExistsIncreaseMovementSpeed(BehaviourTree bTree)
     {
-        return new ConditionNode(delegate ()
-        {
-            return GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.IncreaseMovementSpeed);
-        }, BTree);
+        return new ConditionNode(
+            () => GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.IncreaseMovementSpeed), bTree);
     }
 
-    public static ConditionNode ExistsRespawnAll(BehaviourTree BTree)
+    public static ConditionNode ExistsRespawnAll(BehaviourTree bTree)
     {
-        return new ConditionNode(delegate ()
-        {
-            return GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.RespawnAll);
-        }, BTree);
+        return new ConditionNode(() => GameManager.Instance.ExistsCollectibleOfType(CollectibleItemType.RespawnAll), bTree);
     }
 }

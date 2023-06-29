@@ -17,20 +17,14 @@ public class SelectorNode : AbstractNode
     {
         SequencePosition = ActionSequence.Count;
         AdvanceInSequence();
-        if (Parent != null)
-        {
-            Parent.ChildExit(true);
-        }
+        Parent?.ChildExit(true);
     }
 
     public override void Fail()
     {
         SequencePosition = ActionSequence.Count;
         AdvanceInSequence();
-        if (Parent != null)
-        {
-            Parent.ChildExit(false);
-        }
+        Parent?.ChildExit(false);
     }
 
     public override void ChildExit(bool outcome)
@@ -63,28 +57,24 @@ public class SelectorNode : AbstractNode
             IsRoot = true;
             BTree.CurrentRoot = this;
         }
-        if (ActionSequence.Count > 0)
-        {
-            return ActionSequence[SequencePosition];
-        }
-        return null;
+        return ActionSequence.Count > 0 ? ActionSequence[SequencePosition] : null;
     }
 
     public override void AdvanceInSequence()
     {
         SequencePosition++;
-        if (SequencePosition >= ActionSequence.Count)
+        if (SequencePosition < ActionSequence.Count) 
+            return;
+        
+        SequencePosition = 0;
+        if (BTree.CurrentRoot != HeldRoot)
         {
-            SequencePosition = 0;
-            if (BTree.CurrentRoot != HeldRoot)
-            {
-                IsRoot = false;
-            }
-            if (HeldRoot != null)
-            {
-                BTree.CurrentRoot = HeldRoot;
-            }
-            HeldRoot = null;
+            IsRoot = false;
         }
+        if (HeldRoot != null)
+        {
+            BTree.CurrentRoot = HeldRoot;
+        }
+        HeldRoot = null;
     }
 }

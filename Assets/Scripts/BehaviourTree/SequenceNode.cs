@@ -15,20 +15,14 @@ public class SequenceNode : AbstractNode
 
     public override void Succeed()
     {
-        if (Parent != null)
-        {
-            Parent.ChildExit(true);
-        }
+        Parent?.ChildExit(true);
     }
 
     public override void Fail()
     {
         _sequencePosition = _actionSequence.Count;
         AdvanceInSequence();
-        if (Parent != null)
-        {
-            Parent.ChildExit(false);
-        }
+        Parent?.ChildExit(false);
     }
 
     public override void ChildExit(bool outcome)
@@ -61,11 +55,7 @@ public class SequenceNode : AbstractNode
             IsRoot = true;
             BTree.CurrentRoot = this;
         }
-        if (_actionSequence.Count > 0)
-        {
-            return _actionSequence[_sequencePosition];
-        }
-        return null;
+        return _actionSequence.Count > 0 ? _actionSequence[_sequencePosition] : null;
     }
 
     public override void AdvanceInSequence()

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BehaviourTree
@@ -25,7 +23,7 @@ public class BehaviourTree
             CurrentRoot = Root;
         }
 
-        AbstractNode currentNode = CurrentRoot;
+        var currentNode = CurrentRoot;
         
         while (currentNode.NodeType != NodeType.Action)
         {

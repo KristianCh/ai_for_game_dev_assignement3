@@ -27,7 +27,7 @@ public class TangoPlayer : ComputerPlayer
         getCloserAddSpeed.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
         getCloserAddSpeed.SetRight(ActionNode.GetClosestIncreaseMovementSpeed(this, _behaviourTree));
 
-        SelectorNode selector = new SelectorNode(_behaviourTree);
+        var selector = new SelectorNode(_behaviourTree);
         selector.AddNodeToSequence(getCloserAddSpeed);
         selector.AddNodeToSequence(ActionNode.GetClosestAny(this, _behaviourTree));
 

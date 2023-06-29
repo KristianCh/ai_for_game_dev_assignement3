@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ActionNode : AbstractNode
@@ -24,35 +22,28 @@ public class ActionNode : AbstractNode
     }
 
     // common nodes
-    public static ActionNode GetClosestAddPoint(ComputerPlayer player, BehaviourTree BTree)
+    public static ActionNode GetClosestAddPoint(ComputerPlayer player, BehaviourTree bTree)
     {
-        return new ActionNode(delegate ()
-        {
-            return GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.AddPoint);
-        }, BTree, CollectibleItemType.AddPoint);
+        return new ActionNode(
+            () => GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.AddPoint), bTree, CollectibleItemType.AddPoint);
     }
 
-    public static ActionNode GetClosestIncreaseMovementSpeed(ComputerPlayer player, BehaviourTree BTree)
+    public static ActionNode GetClosestIncreaseMovementSpeed(ComputerPlayer player, BehaviourTree bTree)
     {
-        return new ActionNode(delegate ()
-        {
-            return GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.IncreaseMovementSpeed);
-        }, BTree, CollectibleItemType.IncreaseMovementSpeed);
+        return new ActionNode(
+            () => GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile,
+                CollectibleItemType.IncreaseMovementSpeed), bTree, CollectibleItemType.IncreaseMovementSpeed);
     }
 
-    public static ActionNode GetClosestRespawnAll(ComputerPlayer player, BehaviourTree BTree)
+    public static ActionNode GetClosestRespawnAll(ComputerPlayer player, BehaviourTree bTree)
     {
-        return new ActionNode(delegate ()
-        {
-            return GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.RespawnAll);
-        }, BTree, CollectibleItemType.RespawnAll);
+        return new ActionNode(
+            () => GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.RespawnAll), bTree, CollectibleItemType.RespawnAll);
     }
 
-    public static ActionNode GetClosestAny(ComputerPlayer player, BehaviourTree BTree)
+    public static ActionNode GetClosestAny(ComputerPlayer player, BehaviourTree bTree)
     {
-        return new ActionNode(delegate ()
-        {
-            return GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.Any);
-        }, BTree, CollectibleItemType.Any);
+        return new ActionNode(
+            () => GameManager.Instance.GetClosestCollectibleOfType(player.CurrentTile, CollectibleItemType.Any), bTree, CollectibleItemType.Any);
     }
 }

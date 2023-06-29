@@ -29,10 +29,8 @@ public class DjangoPlayer : ComputerPlayer
         var existsRespawnAll = ConditionNode.ExistsRespawnAll(_behaviourTree);
 
         existsRespawnAll.SetLeft(ActionNode.GetClosestRespawnAll(this, _behaviourTree));
-        existsRespawnAll.SetRight(new ActionNode(delegate ()
-        {
-            return _parentMaze.GetMazeTileForWorldPosition(Blackboard.Instance.HumanPlayer.transform.position);
-        }, _behaviourTree, CollectibleItemType.None));
+        existsRespawnAll.SetRight(new ActionNode(
+            () => _parentMaze.GetMazeTileForWorldPosition(Blackboard.Instance.HumanPlayer.transform.position), _behaviourTree, CollectibleItemType.None));
 
         existsAddPoint.SetLeft(ActionNode.GetClosestAddPoint(this, _behaviourTree));
         existsAddPoint.SetRight(existsRespawnAll);

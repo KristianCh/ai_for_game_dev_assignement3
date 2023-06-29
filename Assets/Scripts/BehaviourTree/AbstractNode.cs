@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum NodeType
@@ -24,18 +22,12 @@ public class AbstractNode
 
     public virtual void Succeed()
     {
-        if (Parent != null)
-        {
-            Parent.ChildExit(true);
-        }
+        Parent?.ChildExit(true);
     }
 
     public virtual void Fail()
     {
-        if (Parent != null)
-        {
-            Parent.ChildExit(false);
-        }
+        Parent?.ChildExit(false);
     }
 
     public virtual void ChildExit(bool outcome) 
